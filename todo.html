@@ -1,0 +1,61 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-do list</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div class="header">
+        <button id="LogIn">Login</button>
+        <h1 id="mainTitle">To do:</h1>
+        <span class="menuBurger">&#9776;</span>
+    </div>
+    <nav class="sideBar">
+        <ul>
+            <li><input type="radio" id="tab1" name="tab" checked><label for="tab1" data-page="todo">To-do</label></li>
+            <li><input type="radio" id="tab1" name="tab"><label for="tab1" data-page="groceries">Groceries</label></li>
+            <li><input type="radio" id="tab2" name="tab"><label for="tab2" data-page="drugstore">Drugstore</label></li>
+            <li><input type="radio" id="tab3" name="tab"><label for="tab3" data-page="hardware-store">Hardware store</label></li>
+            <li><input type="radio" id="tab4" name="tab"><label for="tab4" data-page="other">Other</label></li>
+        </ul>
+    </nav>
+    <nav class="navPages">
+        <ul>
+            <li><input type="radio" id="tab1" name="tab" checked><label for="tab0" data-page="todo">To-do</label></li>
+            <li><input type="radio" id="tab1" name="tab" ><label for="tab1" data-page="groceries">Groceries</label></li>
+            <li><input type="radio" id="tab2" name="tab"><label for="tab2" data-page="drugstore">Drugstore</label></li>
+            <li><input type="radio" id="tab3" name="tab"><label for="tab3" data-page="hardware-store">Hardware store</label></li>
+            <li><input type="radio" id="tab4" name="tab"><label for="tab4" data-page="other">Other</label></li>
+        </ul>
+    </nav>
+
+
+    <div class="row">
+        <input type="text" id="inputBox" placeholder="Write a task">
+        <button id="addItem">Add task</button>
+    </div>
+
+<!-- i wanna target with css only buttons from row and shoppingList. nav .navlinks button {} ?-->
+    <ul id="tasks" class="shoppingList">
+        <li><span class="emoji">○</span> <span class="text">Task 1</span> <button class="deleteBtn">x</button> <button class="crossBtn">✓</button> <button class="editBtn">Edit</button></li>
+        <li><span class="emoji">○</span> <span class="text">Task 2</span> <button class="deleteBtn">x</button> <button class="crossBtn">✓</button> <button class="editBtn">Edit</button></li>
+        <li><span class="emoji">○</span> <span class="text">Task 3</span> <button class="deleteBtn">x</button> <button class="crossBtn">✓</button> <button class="editBtn">Edit</button></li>
+        <li><span class="emoji">○</span> <span class="text">Task 4</span> <button class="deleteBtn">x</button> <button class="crossBtn">✓</button> <button class="editBtn">Edit</button></li>
+        <li><span class="emoji">○</span> <span class="text">Task 5</span> <button class="deleteBtn">x</button> <button class="crossBtn">✓</button> <button class="editBtn">Edit</button></li>
+    </ul>
+
+    
+    <div class="image-column left-column"></div>
+    <div class="image-column right-column"></div>
+
+    <br />
+
+    <p id="end">Have a nice day!</p>
+    <button id="modeSwitchBtn" onclick="nightMode();">☀︎ / ☾</button>
+    <script src="script.js"></script>
+</body>
+</html>
