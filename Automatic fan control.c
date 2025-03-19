@@ -4,9 +4,8 @@
  und steuert einen Lüfter über PWM. Ein Ultraschallsensor erkennt Personen in der Nähe
  und schaltet den Lüfter ab, um Energie zu sparen und Lärm zu reduzieren.
  Verwendete Hardware: Arduino Mega 2560, TMP36 Temperatursensor, 5V PWM-gesteuerter Lüfter, 
- HC-SR04 Ultraschall-Abstandssensor, 16x2 LCD mit I2C, Widerstände, Breadboard
- */
-
+ HC-SR04 Ultraschall-Abstandssensor, 16x2 LCD mit I2C, Breadboard, Kabel
+*/
 
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C LCD(0x27,16,2);
@@ -17,7 +16,7 @@ int FAN_PWM_PIN = 9;   //PWM output for the fan
 int SEND_PIN = 3;      //send an ultrasonic pulse from the sensor to measure distance
 int ECHO_PIN = 4;      //receives the reflected ultrasonic pulse
 
-//storing measurement values
+//variables for storing measurement values
 double temperature = 0;
 int duration;
 long distance;
@@ -63,6 +62,13 @@ void loop() {
   LCD.print(distance);
   LCD.print(" cm");
 
+  //serial monitor print
+  Serial.print(temperature);
+  Serial.print(" C;   ");
+  Serial.print(distance);
+  Serial.print(" cm");
+  Serial.println();
+
   delay(1000);
 }
 
@@ -70,7 +76,7 @@ void loop() {
 //reads the analog input and calculates the temperature in C
 float getTemperature() {
   int sensorValue = analogRead(TEMP_SENSOR);
-  float voltage = sensorValue * (5.0 / 1023.0); //to V
+  float voltage = sensorValue * (5.0 / 1024.0); //to V
   return (voltage - 0.5) * 100.0; //to T, Celsius
 }
 
@@ -80,9 +86,9 @@ int getDistance() {
     delayMicroseconds(2);          //wait to make sure initialization was correct
 
     digitalWrite(SEND_PIN, HIGH);  //send the signal
-    delayMicroseconds(10);         //
+    delayMicroseconds(10);         //wait 10 ms
 
     digitalWrite(SEND_PIN, LOW);   //turn off
     duration = pulseIn(ECHO_PIN, HIGH);
-    return duration * 0.017 / 2;   //to cm
+    return duration * 0.034 / 2;; // conversion to cm
 }
