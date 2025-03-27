@@ -12,7 +12,7 @@ Titel: Optische Datenübertragung mit Arduino
   3. Spannung in Temperatur (°C) umwandeln  
   4. Temperaturwert in Binärformat konvertieren  
   5. Binärdaten über Laserdiode senden  
-  6. Empfänger-Arduino empfängt und dekodiert die Daten  
+  6. Empfänger-Arduino empfängt und dekodiert die Datesn  
 
   Verwendete Hardware:  
   - Arduino Mega 2560 (Sender & Empfänger)  
@@ -21,15 +21,19 @@ Titel: Optische Datenübertragung mit Arduino
   - Lichtwellenleiter (LWL)  
   - Fotodetektor  
   - USB-Kabel 
-  
   Lizenz: MIT-Lizenz
 */
 
 #include <math.h>
 
+//avoiding magical numbers
+#define PAUSE_BETWEEN_BITS 500
+#define HIGH_SIGNAL 255
+#define LOW_SIGNAL 128
+
 int sensorPin = A0;
 int laserPin = 9;
-    
+
 void setup() {
   pinMode(laserPin, OUTPUT);
   Serial.begin(9600);
@@ -37,36 +41,45 @@ void setup() {
 
 void loop() {
   //read temperature sensor
-  int tempInput = analogRead(sensorPin);
-  float tempInVolt = tempInput * 5.0; //or * 3.3
-  tempInVolt /= 1024.0;
+  int rawValue = analogRead(sensorPin);
 
-  //print voltage
+  // float tempInVolt = rawValue * 5.0; //or * 3.3, for 3.3 V
+  // tempInVolt /= 1024.0;
+
+  //integer math is faster than floating-point operations
+  //int voltage_mV = (rawValue * 5000L) / 1024;
+
+  //2^10 = 1024, so using a right shift by 10 (>> 10) is equivalent to dividing by 1024
+  //L makes 5000L a long integer (32-bit) to prevent integer overflow
+  int voltage_mV = (rawValue * 5000L) >> 10;
+
+
+  //print voltage in millivolts
   Serial.print("Voltage = ");
-  Serial.print(tempInVolt);
-  Serial.print(" mV;\t"); 
+  Serial.print(voltage_mV);
+  Serial.print(" mV;\t");
 
+  //count temperature
+  //if only you knew that AVR can't divide...
+  int temperatureC = (voltage_mV - 500) / 10; 
+  //round up to the nearest int
+  int temperatureRounded = (int)round(temperatureC);
+  
   //print temperature
-  float temperatureC = (tempInVolt - 0.5) * 100;
-  Serial.print("temperatureRounded = "); 
-  Serial.print(temperatureC);
+  Serial.print("temperatureRounded = ");
+  Serial.print(temperatureRounded);
   Serial.println(" °C");
-
-  //round up to int
-  int temperatureRounded = ceil(temperatureC);
-  int temperatureCtest = 29;
 
   //convert to binary
   String binaryString = translateToBinary(temperatureRounded);
-  Serial.println();
   Serial.print("Temperature in binary = ");
   Serial.print(binaryString);
   Serial.println();
 
   //send binary via laser
   sendBinary(binaryString);
-
-  //delay(10000);
+  //turn off the laser for an extended period after transmission to create a clear separation between bit sequences
+  delay(PAUSE_BETWEEN_BITS * 2);
 }
 
 String translateToBinary(int num) {
@@ -78,20 +91,26 @@ String translateToBinary(int num) {
   String binaryString = "";
   while (num > 0) {
     binaryString = String(num % 2) + binaryString;
-    num /= 2;
+    //if only you knew that AVR can't divide...
+    //same as num /= 2, but faster on AVR microcontrollers
+    num >>= 1;
   }
   return binaryString;
 }
 
 void sendBinary(String binaryString) {
+  int signal_strength;
+  //binaryString = "10101";
   for (int i = 0; i < binaryString.length(); i++) {
     //ternary conditional operator (my favourite shortcut UwU)
-    analogWrite(laserPin, binaryString[i] == '1' ? 225 : 128);
-    delay(500);
+    signal_strength = binaryString[i] == '1' ? HIGH_SIGNAL : LOW_SIGNAL;
+    //turn on the laser
+    analogWrite(laserPin, signal_strength);
+    delay(PAUSE_BETWEEN_BITS);
+
+    //turn off the laser
     analogWrite(laserPin, 0);
-    delay(500);
+    delay(PAUSE_BETWEEN_BITS);
   }
-  //turn it off for 1 second after sending
   analogWrite(laserPin, 0);
-  delay(1000);
 }
