@@ -64,7 +64,7 @@ void loop() {
   int temperatureC = (voltage_mV - 500) / 10; 
   //round up to the nearest int
   int temperatureRounded = (int)round(temperatureC);
-  
+
   //print temperature
   Serial.print("temperatureRounded = ");
   Serial.print(temperatureRounded);
@@ -91,7 +91,6 @@ String translateToBinary(int num) {
   String binaryString = "";
   while (num > 0) {
     binaryString = String(num % 2) + binaryString;
-    //if only you knew that AVR can't divide...
     //same as num /= 2, but faster on AVR microcontrollers
     num >>= 1;
   }
@@ -100,10 +99,16 @@ String translateToBinary(int num) {
 
 void sendBinary(String binaryString) {
   int signal_strength;
+
+  while (binaryString.length() < 5) {
+    //add leading zeros
+    binaryString = "0" + binaryString;
+  }
+
   //binaryString = "10101";
   for (int i = 0; i < binaryString.length(); i++) {
     //ternary conditional operator (my favourite shortcut UwU)
-    signal_strength = binaryString[i] == '1' ? HIGH_SIGNAL : LOW_SIGNAL;
+    signal_strength = binaryString[i] == '1' ? HIGH_SIGNAL : HIGH_SIGNAL;
     //turn on the laser
     analogWrite(laserPin, signal_strength);
     delay(PAUSE_BETWEEN_BITS);
