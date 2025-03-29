@@ -27,7 +27,7 @@ int TEMP_SENSOR = A0;  //temperature sensor
 int FAN_PWM_PIN = 9;   //PWM output for the fan
 int SEND_PIN = 3;      //send an ultrasonic pulse from the sensor to measure distance
 int ECHO_PIN = 4;      //receives the reflected ultrasonic pulse
-
+  
 //variables for storing measurement values
 float temperature = 0;
 float lastValidTemperature;
@@ -53,7 +53,8 @@ void setup() {
 void loop() {
   //for the first iteration, get the first valid measurment 
   if (temperature == 0) {
-    lastValidTemperature = temperature = calibrateTemperature(); //calibrate and store first temperature
+    temperature = calibrateTemperature(); //calibrate and store first temperature
+    lastValidTemperature = temperature;
   }
 
   //for following iterations
@@ -65,7 +66,8 @@ void loop() {
     //with the help of the abs() function, which gets the absolute value
     if (abs(temperature - lastValidTemperature) > 5.0) {
       //if it's a large change, calibrate again and store the new valid temperature
-      lastValidTemperature = temperature = calibrateTemperature();
+      temperature = calibrateTemperature();
+      lastValidTemperature = temperature;
     }
   }
 
@@ -74,7 +76,7 @@ void loop() {
   //fan speed settings
   if (distance == 404) {   //if these's an error in reading the distance, turn off the fan (just in case)
     fanSpeed = 0; 
-  } else if (distance < 1) {  //1 cm - so the testing is easier
+  } else if (distance < 50) {  //50 cm
     fanSpeed = 0;   //turns off the fan if a someone is nearby
   } else if (temperature < 20) {
     fanSpeed = 0;   //turns off the fan at very low T
@@ -114,7 +116,6 @@ void loop() {
     //f the distance is 404 (invalid), display "Error" on the serial monitor
     Serial.print("Error");
   }
-
   Serial.println();
 
   delay(988); //in function getDistance() we wait 12 ms; the program has to output values each second
@@ -131,18 +132,22 @@ float calibrateTemperature() {
   float arrayTemp[n];
   for (int i=0; i<n; i++) {
     arrayTemp[i] = getTemperature();
+  }
+
+  //sort an array with bubble sort
+  bubbleSort(n, arrayTemp);
+
+  for (int i=0; i<n; i++) {
     Serial.print(arrayTemp[i]);
     Serial.print(";  ");
   }
   Serial.println();
 
-  //bubble sort
-  bubbleSort(n, arrayTemp);
-
   //take the one in the middle as the correct one
   //both odd and even numbers for n will work
-  int nMid = n / 2;
-  Serial.print(nMid + 1);
+  int nMid = n; //middle on an array
+  nMid >>= 1; //same as nMid = n / 2
+  Serial.print(++nMid); //same as  nMid + 1
   Serial.print(" is the measurment number from the middle of the array, the value is: ");
   Serial.print(arrayTemp[nMid]);
   Serial.println();
@@ -158,7 +163,7 @@ int bubbleSort(int n, float arrayTemp[]) {
       if (arrayTemp[j] > arrayTemp[j+1]) {
         //swap elements, if they're in wrong order
         temp = arrayTemp[j];
-        arrayTemp[j] = arrayTemp[j+1]; 
+        arrayTemp[j] = arrayTemp[j+1];
         arrayTemp[j+1] = temp;
       }
     }
@@ -175,21 +180,23 @@ float getTemperature() {
 
 //measure distance with the HC-SR04 ultrasonic sensor, returns he distance
 int getDistance() {
-    digitalWrite(SEND_PIN, LOW);   //initializing the sensor
-    delayMicroseconds(2);          //wait to make sure initialization was correct
+  digitalWrite(SEND_PIN, LOW);   //initializing the sensor
+  delayMicroseconds(2);          //wait to make sure initialization was correct
 
-    digitalWrite(SEND_PIN, HIGH);  //send the signal
-    delayMicroseconds(10);         //wait 10 ms
+  digitalWrite(SEND_PIN, HIGH);  //send the signal
+  delayMicroseconds(10);         //wait 10 ms
 
-    digitalWrite(SEND_PIN, LOW);   //turn off
-    duration = pulseIn(ECHO_PIN, HIGH);
+  digitalWrite(SEND_PIN, LOW);   //turn off
+  duration = pulseIn(ECHO_PIN, HIGH);
 
-    //convert to distance (in cm)
-    int dist = duration * 0.034 / 2;
+  //convert to distance (in cm)
+  //if only you knew that AVR can't divide...
+  int dist = duration * 0.034 / 2;
 
-    //filter out unrealistic readings (e.g., negative or overly large distances)
-    if (dist < 0 || dist > 300) {
-      dist = 404;  //error code XD
-    }
-    return dist;
+  //filter out unrealistic readings (e.g., negative or overly large distances)
+  if (dist < 0 || dist > 300) {
+    dist = 404;  //error code XD
+  }
+  return dist;
 }
+
