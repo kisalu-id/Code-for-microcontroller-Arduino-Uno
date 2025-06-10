@@ -37,3 +37,37 @@ int distance;
 
 const int distanceNoPersonInRoom = 5;  //lets say, dist for an empty room is 5 cm
 const int distanceForOpenedDoor = 3;
+
+
+
+
+
+
+void jalousieMove(bool turnOn) {
+  Serial.println("Moving jalousie: ");
+  Serial.println(turnOn);
+  if (turnOn) {
+    //pull down with servomotor
+    jalousieServo.write(90);
+  }
+  else {
+    //pull up
+    jalousieServo.write(0);
+  }
+  delay(1000);
+}
+
+
+void BeamerwandMove(bool turnOn) {
+  Serial.println("Moving Beamerwand: ");
+  Serial.println(turnOn);
+  if (turnOn) {
+    //pull down with servomotor
+    jalousieServo.write(90);
+  }
+  else {
+    //pull up
+    jalousieServo.write(0);
+  }
+  delay(1000);  //time to move
+}
